@@ -1,12 +1,13 @@
-import { RotateCcw, Square } from 'lucide-react'
+import { RotateCcw, Square, Play } from 'lucide-react'
 import { useTimerStore } from '../store/timer.store'
+import cx from '../utils/cx'
 
 function pad(n: number) {
   return String(n).padStart(2, '0')
 }
 
 const Timer = () => {
-  const { elapsed, isRunning, reset, pause } = useTimerStore()
+  const { elapsed, isRunning, reset, pause, start } = useTimerStore()
 
   const minutes = Math.floor(elapsed / 60)
   const seconds = elapsed % 60
@@ -20,9 +21,10 @@ const Timer = () => {
       {/* Clock display */}
       <div className="flex items-center justify-center">
         <span
-          className={`text-3xl font-mono font-bold tracking-tight transition-colors duration-300 ${
+          className={cx(
+            'text-3xl font-mono font-bold tracking-tight transition-colors duration-300',
             isRunning ? 'text-teal-700' : 'text-slate-700'
-          }`}
+          )}
         >
           {pad(minutes)}:{pad(seconds)}
         </span>
@@ -46,13 +48,17 @@ const Timer = () => {
         </button>
 
         <button
-          onClick={pause}
+          onClick={isRunning ? pause : start}
           title="Stop timer"
-          className="flex items-center gap-2 text-xs text-red-400 hover:text-red-700
-            transition-colors duration-150 w-fit"
+          className={cx(
+            'flex items-center gap-2 text-xs transition-colors duration-150 w-fit',
+            isRunning
+              ? 'text-red-400 hover:text-red-700'
+              : 'text-teal-400 hover:text-teal-700'
+          )}
         >
-          <Square fill='red' size={12} />
-          Stop
+          {isRunning ? <Square fill='red' size={12} /> : <Play fill='text-teal-700' size={12} />}
+          {isRunning ? 'Stop' : 'Start'}
         </button>
       </div>
     </div>
