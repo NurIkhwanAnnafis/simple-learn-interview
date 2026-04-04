@@ -29,7 +29,7 @@ const Timer = () => {
 
         {/* Running indicator dot */}
         {isRunning && (
-          <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+          <span className="ml-2 w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
         )}
       </div>
 
