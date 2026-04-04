@@ -3,6 +3,8 @@ import { Play, Square } from 'lucide-react'
 import Say from 'react-say'
 import { useTTS } from '../hooks/useTTS'
 import type { ScriptSegment } from '../types'
+import { useConfigSegmentStore } from '../store/config-segment.store'
+import { useTimerStore } from '../store/timer.store'
 
 interface ScriptSegmentCardProps {
   segment: ScriptSegment
@@ -26,6 +28,8 @@ export function ScriptSegmentCard({
   needSeparator,
 }: ScriptSegmentCardProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { config } = useConfigSegmentStore()
+  const timerStart = useTimerStore((s) => s.start)
   const {
     handleSayUtteranceClick,
     sayProps,
@@ -38,6 +42,12 @@ export function ScriptSegmentCard({
   } = useTTS({
     lang: 'id-ID',
   })
+
+  const handlePlayClick = () => {
+    handleSayUtteranceClick()
+    // Start timer on play (noop if already running)
+    if (!isPlaying) timerStart()
+  }
 
   const handleDelete = () => {
     setIsPlaying(false)
@@ -82,9 +92,11 @@ export function ScriptSegmentCard({
                 <option key={voiceURI} value={voiceURI}>{`[${lang}] ${name || voiceURI}`}</option>
               ))}
             </select>
-            <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
-              {wordCount} Words
-            </span>
+            {config.showWordCount && (
+              <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+                {wordCount} Words
+              </span>
+            )}
           </div>
         </div>
 
@@ -92,7 +104,7 @@ export function ScriptSegmentCard({
         <div className="flex flex-col items-center gap-2 pt-1">
           {/* Play / Stop button */}
           <button
-            onClick={handleSayUtteranceClick}
+            onClick={handlePlayClick}
             disabled={!segment.text.trim()}
             title={isPlaying ? 'Stop' : 'Play'}
             className="w-10 h-10 flex items-center justify-center rounded-lg
@@ -125,15 +137,17 @@ export function ScriptSegmentCard({
           )}
         </div>
       </div>
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <textarea
-          placeholder="Type your answer here..."
-          rows={4}
-          className="w-full px-5 pt-5 pb-3 text-slate-700 text-sm leading-relaxed
-            placeholder:text-slate-300 resize-none outline-none bg-transparent
-            font-normal"
-        />
-      </div>
+      {config.showAnswer && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <textarea
+            placeholder="Type your answer here..."
+            rows={4}
+            className="w-full px-5 pt-5 pb-3 text-slate-700 text-sm leading-relaxed
+              placeholder:text-slate-300 resize-none outline-none bg-transparent
+              font-normal"
+          />
+        </div>
+      )}
 
       {needSeparator && (
         <div className="w-full h-px bg-slate-200 my-4" />

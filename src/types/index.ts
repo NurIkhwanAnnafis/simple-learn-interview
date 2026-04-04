@@ -3,3 +3,9 @@ export interface ScriptSegment {
   text: string
   voice: string
 }
+
+export type SegmentConfig = {
+  showWordCount: boolean
+  showAnswer: boolean
+  showTimer: boolean
+}
