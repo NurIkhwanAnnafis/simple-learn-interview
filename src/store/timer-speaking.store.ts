@@ -13,6 +13,7 @@ interface TimerState {
   setIsSpeaking: () => void
   setIsMicNotAllowed: () => void
   setIsIdle: () => void
+  restart: () => void
 }
 
 export const useTimerSpeakingStore = create<TimerState>((set, get) => ({
@@ -25,12 +26,18 @@ export const useTimerSpeakingStore = create<TimerState>((set, get) => ({
   start: () => {
     if (get().intervalId) return
     const id = setInterval(() => {
-      const { isPlaying, cooldown, isSpeaking } = get()
-      if (isPlaying && !isSpeaking && cooldown > 0) {
+      const { isPlaying, cooldown } = get()
+      if (isPlaying && cooldown > 0) {
         set((s) => ({ cooldown: Math.max(0, s.cooldown - 1) }))
       }
     }, 1000)
     set({ intervalId: id })
+  },
+
+  restart: () => {
+    const { intervalId } = get()
+    if (intervalId) clearInterval(intervalId)
+    set({ intervalId: null, cooldown: 5, isPlaying: true, isSpeaking: true })
   },
 
   reset: () => {

@@ -3,7 +3,7 @@ import hark from "hark"
 import { useTimerSpeakingStore } from "../store/timer-speaking.store"
 
 export const useMic = () => {
-  const { setIsMicNotAllowed, setIsSpeaking } = useTimerSpeakingStore()
+  const { setIsMicNotAllowed, setIsSpeaking, restart } = useTimerSpeakingStore()
   const [isDetectSpeaking, setIsDetectSpeaking] = useState(false)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -22,6 +22,7 @@ export const useMic = () => {
       speechEvents.on('stopped_speaking', () => {
         console.log('Stopped isDetectSpeaking!');
         setIsDetectSpeaking(false);
+        restart()
       });
     });
   }

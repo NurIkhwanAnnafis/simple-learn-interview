@@ -4,9 +4,7 @@ import { useTimerSpeakingStore } from '../store/timer-speaking.store'
 const ProgressStatus: React.FC = () => {
   const { isSpeaking, isPlaying, cooldown, status } = useTimerSpeakingStore()
 
-  // Calculate width based on cooldown (5 to 0 seconds)
-  // If not playing, we show full width (or whatever the initial state should be)
-  const width = !isSpeaking && isPlaying ? (cooldown / 5) * 100 : 100
+  const width = isPlaying ? (cooldown / 5) * 100 : 100
 
   return (
     <div className="flex flex-col gap-1.5 w-full">
