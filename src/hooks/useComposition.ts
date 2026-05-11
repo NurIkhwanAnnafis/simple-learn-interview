@@ -1,5 +1,9 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { ScriptSegment } from '../types'
+import { useMic } from './useMic'
+import type { ScriptSegmentCardHandle } from '../components/ScriptSegmentCard'
+import { useTimerSpeakingStore } from '../store/timer-speaking.store'
+import { useDebounce } from './useDebounce'
 
 const DEFAULT_VOICE = 'Indonesian female'
 
@@ -19,6 +23,10 @@ const countWords = (text: string): number => {
 }
 
 export function useComposition() {
+  const { startSpeaking, isDetectSpeaking } = useMic()
+  const { isPlaying, start, setIsIdle } = useTimerSpeakingStore()
+  const [segmentSelected, setSegmentSelected] = useState(0)
+  const refScriptSegments = useRef<Array<ScriptSegmentCardHandle | null>>([])
   const [segments, setSegments] = useState<ScriptSegment[]>([
     createSegment(),
     createSegment(),
@@ -49,11 +57,35 @@ export function useComposition() {
     [segments],
   )
 
+  const handleCountDownCauseIdle = () => {
+    setIsIdle()
+    start()
+  }
+
+  const onEndQuestion = () => {
+    startSpeaking()
+  }
+
+  const debounceIsIdle = useDebounce(!isDetectSpeaking && isPlaying, 3000)
+
+  useEffect(() => {
+    if (debounceIsIdle) {
+      const timeoutId = setTimeout(() => {
+        handleCountDownCauseIdle()
+      }, 3000)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [debounceIsIdle])
+
   return {
     segments,
     addSegment,
     removeSegment,
     updateSegmentText,
     getWordCount,
+    refScriptSegments,
+    setSegmentSelected,
+    onEndQuestion,
   }
 }

@@ -1,6 +1,6 @@
 import { useComposition } from './hooks/useComposition'
 import { Header } from './components/Header'
-import { ScriptSegmentCard } from './components/ScriptSegmentCard'
+import ScriptSegmentCard from './components/ScriptSegmentCard'
 import { AddFieldButton } from './components/AddFieldButton'
 import { Composer } from 'react-say'
 import ConfigSegment from './components/ConfigSegment'
@@ -15,10 +15,13 @@ const PLACEHOLDERS = [
 function App() {
   const {
     segments,
+    refScriptSegments,
     addSegment,
     removeSegment,
     updateSegmentText,
-    getWordCount
+    getWordCount,
+    setSegmentSelected,
+    onEndQuestion,
   } = useComposition()
 
   return (
@@ -43,6 +46,7 @@ function App() {
             <Composer>
               {({ voices }: { voices: SpeechSynthesisVoice[] }) => segments.map((segment, index) => (
                 <ScriptSegmentCard
+                  ref={el => { refScriptSegments.current[index] = el }}
                   key={segment.id}
                   index={index}
                   segment={segment}
@@ -52,6 +56,8 @@ function App() {
                   placeholder={PLACEHOLDERS[index] ?? PLACEHOLDERS[0]}
                   voices={voices}
                   needSeparator={index !== segments.length - 1}
+                  onPlay={() => setSegmentSelected(index)}
+                  onStop={() => onEndQuestion()}
                 />
               ))}
             </Composer>

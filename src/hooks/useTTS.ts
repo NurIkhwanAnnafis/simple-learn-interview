@@ -28,16 +28,16 @@ export function useTTS({
   );
 
   const [isPlaying, setIsPlaying] = useState(false)
+
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string | undefined>();
+  const handleSelectedVoiceChange = useCallback(
+    ({ target: { value } }: { target: { value: string } }) => setSelectedVoiceURI(value),
+    []
+  );
 
   // Toggle play/stop. <Say> will speak when isPlaying=true via the render in ScriptSegmentCard.
   const handleSayUtteranceClick = useCallback(
     () => setIsPlaying(prev => !prev),
-    []
-  );
-
-  const handleSelectedVoiceChange = useCallback(
-    ({ target: { value } }: { target: { value: string } }) => setSelectedVoiceURI(value),
     []
   );
 

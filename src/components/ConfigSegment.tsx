@@ -1,4 +1,5 @@
 import { useConfigSegmentStore } from '../store/config-segment.store'
+import ProgressStatus from './ProgressStatus'
 import Timer from './Timer'
 
 const ConfigSegment = () => {
@@ -54,6 +55,8 @@ const ConfigSegment = () => {
 
       {/* Timer — shown when toggled on */}
       {config.showTimer && <Timer />}
+
+      <ProgressStatus />
     </div>
   )
 }

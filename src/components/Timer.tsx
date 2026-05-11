@@ -58,7 +58,7 @@ const Timer = () => {
           )}
         >
           {isRunning ? <Square fill='red' size={12} /> : <Play fill='text-teal-700' size={12} />}
-          {isRunning ? 'Stop' : 'Start'}
+          {isRunning ? 'Pause' : seconds + minutes > 0 ? 'Resume' : 'Start'}
         </button>
       </div>
     </div>

@@ -1,10 +1,15 @@
-import { useRef } from 'react'
+import { forwardRef, useImperativeHandle, useRef } from 'react'
 import { Play, Square } from 'lucide-react'
 import Say from 'react-say'
 import { useTTS } from '../hooks/useTTS'
 import type { ScriptSegment } from '../types'
 import { useConfigSegmentStore } from '../store/config-segment.store'
 import { useTimerStore } from '../store/timer.store'
+import { useTimerSpeakingStore } from '../store/timer-speaking.store'
+
+export type ScriptSegmentCardHandle = {
+  handlePlayClick: () => void
+}
 
 interface ScriptSegmentCardProps {
   segment: ScriptSegment
@@ -15,21 +20,27 @@ interface ScriptSegmentCardProps {
   placeholder?: string
   voices: SpeechSynthesisVoice[]
   needSeparator?: boolean
+  onPlay?: () => void
+  onStop?: () => void
 }
 
-export function ScriptSegmentCard({
-  segment,
-  wordCount,
-  onTextChange,
-  onDelete,
-  placeholder = 'Type your question here...',
-  voices,
-  index,
-  needSeparator,
-}: ScriptSegmentCardProps) {
+const ScriptSegmentCard = forwardRef<ScriptSegmentCardHandle, ScriptSegmentCardProps>((props, ref) => {
+  const {
+    segment,
+    wordCount,
+    onTextChange,
+    onDelete,
+    placeholder = 'Type your question here...',
+    voices,
+    index,
+    needSeparator,
+    onPlay,
+    onStop,
+  } = props
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { config } = useConfigSegmentStore()
   const timerStart = useTimerStore((s) => s.start)
+  const timerSpeaking = useTimerSpeakingStore()
   const {
     handleSayUtteranceClick,
     sayProps,
@@ -46,13 +57,29 @@ export function ScriptSegmentCard({
   const handlePlayClick = () => {
     handleSayUtteranceClick()
     // Start timer on play (noop if already running)
-    if (!isPlaying) timerStart()
+    if (!isPlaying) {
+      onPlay?.()
+      timerStart()
+      if (timerSpeaking.status !== 'mic-not-allowed') timerSpeaking.setIsPlaying(true)
+    }
+  }
+
+  const handleOnEnd = () => {
+    setIsPlaying(false)
+    if (timerSpeaking.status !== 'mic-not-allowed') {
+      timerSpeaking.setIsSpeaking()
+      onStop?.()
+    }
   }
 
   const handleDelete = () => {
     setIsPlaying(false)
     onDelete(segment.id)
   }
+
+  useImperativeHandle(ref, () => ({
+    handlePlayClick,
+  }))
 
   return (
     <>
@@ -62,7 +89,7 @@ export function ScriptSegmentCard({
         {isPlaying && segment.text.trim() && (
           <Say
             text={segment.text}
-            onEnd={() => setIsPlaying(false)}
+            onEnd={handleOnEnd}
             onError={() => setIsPlaying(false)}
             voice={selectVoice}
             ponyfill={ponyfill}
@@ -154,4 +181,6 @@ export function ScriptSegmentCard({
       )}
     </>
   )
-}
+})
+
+export default ScriptSegmentCard
