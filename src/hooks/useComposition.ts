@@ -83,7 +83,6 @@ export function useComposition() {
 
   useEffect(() => {
     if (debounceIsIdle) {
-      console.log("triggering idle")
       const timeoutId = setTimeout(() => {
         handleCountdownCauseIdle()
       }, 3000)

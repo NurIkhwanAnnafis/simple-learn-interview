@@ -20,13 +20,11 @@ export const useMic = () => {
     speechEvents.current = hark(streamRef.current, options);
 
     speechEvents.current.on('speaking', () => {
-      console.log('isDetectSpeaking!');
       setIsDetectSpeaking(true);
       setIsSpeaking()
     });
 
     speechEvents.current.on('stopped_speaking', () => {
-      console.log('isDetectNotSpeaking!');
       setIsDetectSpeaking(false);
       restart()
     });
