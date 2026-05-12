@@ -1,6 +1,7 @@
 import { RotateCcw, Square, Play } from 'lucide-react'
 import { useTimerStore } from '../store/timer.store'
 import cx from '../utils/cx'
+import { useTimerSpeakingStore } from '../store/timer-speaking.store'
 
 function pad(n: number) {
   return String(n).padStart(2, '0')
@@ -8,6 +9,12 @@ function pad(n: number) {
 
 const Timer = () => {
   const { elapsed, isRunning, reset, pause, start } = useTimerStore()
+  const { reset: resetTimerSpeaking } = useTimerSpeakingStore()
+
+  const handleReset = () => {
+    reset()
+    resetTimerSpeaking()
+  }
 
   const minutes = Math.floor(elapsed / 60)
   const seconds = elapsed % 60
@@ -38,7 +45,7 @@ const Timer = () => {
       {/* Reset and Stop button */}
       <div className="flex items-center justify-between">
         <button
-          onClick={reset}
+          onClick={handleReset}
           title="Reset timer"
           className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-700
             transition-colors duration-150 w-fit"

@@ -20,7 +20,7 @@ function App() {
     removeSegment,
     updateSegmentText,
     getWordCount,
-    setSegmentSelected,
+    onStartQuestion,
     onEndQuestion,
   } = useComposition()
 
@@ -56,7 +56,7 @@ function App() {
                   placeholder={PLACEHOLDERS[index] ?? PLACEHOLDERS[0]}
                   voices={voices}
                   needSeparator={index !== segments.length - 1}
-                  onPlay={() => setSegmentSelected(index)}
+                  onPlay={() => onStartQuestion(index)}
                   onStop={() => onEndQuestion()}
                 />
               ))}

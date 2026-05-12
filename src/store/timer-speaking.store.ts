@@ -5,9 +5,10 @@ interface TimerState {
   cooldown: number
   isPlaying: boolean
   isSpeaking: boolean
-  status: 'idle' | 'speaking' | 'listening' | 'mic-not-allowed' |''
+  status: 'idle' | 'speaking' | 'listening' | 'mic-not-allowed' | ''
 
   start: () => void
+  stop: () => void
   reset: () => void
   setIsPlaying: (playing: boolean) => void
   setIsSpeaking: () => void
@@ -34,10 +35,14 @@ export const useTimerSpeakingStore = create<TimerState>((set, get) => ({
     set({ intervalId: id })
   },
 
-  restart: () => {
+  stop: () => {
     const { intervalId } = get()
     if (intervalId) clearInterval(intervalId)
-    set({ intervalId: null, cooldown: 5, isPlaying: true, isSpeaking: true })
+    set({ intervalId: null, cooldown: 5, isPlaying: true, isSpeaking: false, status: 'listening' })
+  },
+
+  restart: () => {
+    set({ cooldown: 5, isPlaying: true, isSpeaking: true })
   },
 
   reset: () => {

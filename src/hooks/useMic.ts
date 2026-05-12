@@ -7,35 +7,41 @@ export const useMic = () => {
   const [isDetectSpeaking, setIsDetectSpeaking] = useState(false)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const speechEvents = useRef<any>(null);
 
   const startSpeaking = () => {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      const options = {};
-      const speechEvents = hark(stream, options);
+    if (!streamRef.current) {
+      console.error("No microphone stream available");
+      return;
+    }
 
-      speechEvents.on('speaking', () => {
-        console.log('isDetectSpeaking!');
-        setIsDetectSpeaking(true);
-        setIsSpeaking()
-      });
+    const options = {};
+    speechEvents.current = hark(streamRef.current, options);
 
-      speechEvents.on('stopped_speaking', () => {
-        console.log('Stopped isDetectSpeaking!');
-        setIsDetectSpeaking(false);
-        restart()
-      });
+    speechEvents.current.on('speaking', () => {
+      console.log('isDetectSpeaking!');
+      setIsDetectSpeaking(true);
+      setIsSpeaking()
+    });
+
+    speechEvents.current.on('stopped_speaking', () => {
+      console.log('isDetectNotSpeaking!');
+      setIsDetectSpeaking(false);
+      restart()
     });
   }
 
   const stopRecording = () => {
     mediaRecorderRef.current?.stop();
+    speechEvents.current?.stop();
     setIsDetectSpeaking(false);
   };
 
   useEffect(() => {
     async function getMic() {
       try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
         console.log("Mic access granted");
       } catch (err) {
         console.error("Mic access denied or not available", err);

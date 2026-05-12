@@ -1,9 +1,10 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import type { ScriptSegment } from '../types'
 import { useMic } from './useMic'
 import type { ScriptSegmentCardHandle } from '../components/ScriptSegmentCard'
 import { useTimerSpeakingStore } from '../store/timer-speaking.store'
 import { useDebounce } from './useDebounce'
+import { useTimerStore } from '../store/timer.store'
 
 const DEFAULT_VOICE = 'Indonesian female'
 
@@ -23,9 +24,11 @@ const countWords = (text: string): number => {
 }
 
 export function useComposition() {
-  const { startSpeaking, isDetectSpeaking } = useMic()
-  const { isPlaying, start, setIsIdle } = useTimerSpeakingStore()
+  const { startSpeaking, isDetectSpeaking, stopRecording } = useMic()
+  const { isPlaying, start, setIsIdle, cooldown, stop, reset } = useTimerSpeakingStore()
+  const { pause } = useTimerStore()
   const [segmentSelected, setSegmentSelected] = useState(0)
+  const [isQuestioning, setIsQuestioning] = useState(false)
   const refScriptSegments = useRef<Array<ScriptSegmentCardHandle | null>>([])
   const [segments, setSegments] = useState<ScriptSegment[]>([
     createSegment(),
@@ -57,26 +60,51 @@ export function useComposition() {
     [segments],
   )
 
-  const handleCountDownCauseIdle = () => {
+  const handleCountdownCauseIdle = () => {
     setIsIdle()
     start()
   }
 
+  const onStartQuestion = (index: number) => {
+    setIsQuestioning(true)
+    setSegmentSelected(index)
+  }
+
   const onEndQuestion = () => {
+    setIsQuestioning(false)
     startSpeaking()
   }
 
-  const debounceIsIdle = useDebounce(!isDetectSpeaking && isPlaying, 3000)
+  const isMustCountdown = useMemo(() => {
+    return !isDetectSpeaking && isPlaying && !isQuestioning
+  }, [isDetectSpeaking, isPlaying, isQuestioning])
+
+  const debounceIsIdle = useDebounce(isMustCountdown, 3000)
 
   useEffect(() => {
     if (debounceIsIdle) {
+      console.log("triggering idle")
       const timeoutId = setTimeout(() => {
-        handleCountDownCauseIdle()
+        handleCountdownCauseIdle()
       }, 3000)
 
       return () => clearTimeout(timeoutId)
     }
   }, [debounceIsIdle])
+
+  const handlePlayNextSegment = () => {
+    stopRecording()
+    if (refScriptSegments.current[segmentSelected + 1]) {
+      refScriptSegments.current[segmentSelected + 1]?.handlePlayClick()
+      stop()
+    } else {
+      reset()
+      pause()
+    }
+  }
+  useEffect(() => {
+    if (cooldown === 0) handlePlayNextSegment()
+  }, [cooldown])
 
   return {
     segments,
@@ -87,5 +115,6 @@ export function useComposition() {
     refScriptSegments,
     setSegmentSelected,
     onEndQuestion,
+    onStartQuestion,
   }
 }
